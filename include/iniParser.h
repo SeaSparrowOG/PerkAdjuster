@@ -4,5 +4,5 @@
  
 namespace iniParser {
 
-	std::vector<CSimpleIniA::Entry> RetrieveAndManipulate();
+	void RetrieveAndManipulate();
 }

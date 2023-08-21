@@ -37,10 +37,10 @@ SKSEPluginLoad(const SKSE::LoadInterface* skse) {
 
     SKSE::Init(skse);
 
-    //if (!SKSE::GetPapyrusInterface()->Register(papyrusAPI::Bind)) {
+    if (!SKSE::GetPapyrusInterface()->Register(papyrusAPI::Bind)) {
 
-        //return false;
-    //}
+        return false;
+    }
 
     auto messaging = SKSE::GetMessagingInterface();
     messaging->RegisterListener(MessageHandler);

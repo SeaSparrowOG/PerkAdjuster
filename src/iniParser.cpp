@@ -48,6 +48,14 @@ namespace iniParser {
 		}
 	}
 
+	std::vector<std::string> RetrieveConfigs() {
+		auto directory = R"(Data\)";
+		auto suffix = "_PRKR"sv;
+		std::vector<std::string> paths = clib_util::distribution::get_configs(directory, suffix);
+
+		return paths;
+	}
+
 	RE::BGSPerk* FindPerkInArray(RE::BSTArray<RE::BGSPerk*, RE::BSTArrayHeapAllocator> a_perkArray, const char* a_name) {
 
 		RE::BGSPerk* fail = nullptr;
@@ -72,16 +80,10 @@ namespace iniParser {
 		return fail;
 	}
 
-	std::vector<CSimpleIniA::Entry> RetrieveAndManipulate() {
-
-		std::vector<CSimpleIniA::Entry> result;
-		auto directory = R"(Data\)";
-		auto suffix = "_PRKR"sv;
-		auto data_handler = RE::TESDataHandler::GetSingleton();
-		auto perk_array = data_handler->GetFormArray<RE::BGSPerk>();
-
-		std::vector<std::string> paths = clib_util::distribution::get_configs(directory, suffix);
+	void RetrieveAndManipulate() {
 		
+		auto paths = RetrieveConfigs();
+
 		for (const auto& foundPath : paths) {
 
 			CSimpleIniA ini;
@@ -90,19 +92,23 @@ namespace iniParser {
 
 			if (const auto rc = ini.LoadFile(foundPath.c_str()); rc < 0) {
 
-				SKSE::log::info("Failed to find path.");
+				SKSE::log::info("Failed to open INI for {}.", foundPath);
 				continue;
 			}
 
 			std::list<CSimpleIniA::Entry> entries;
-			ini.GetAllSections(entries); 
+			ini.GetAllSections(entries);
+
+			auto data_handler = RE::TESDataHandler::GetSingleton();
+			auto perk_array = data_handler->GetFormArray<RE::BGSPerk>();
 
 			for (auto& localEntry : entries) {
 
 				auto entry_name = localEntry.pItem;
+
 				RE::BGSPerk* associatedForm;
 
-				associatedForm = FindPerkInArray(perk_array, entry_name); 
+				associatedForm = FindPerkInArray(perk_array, entry_name);
 
 				if (!associatedForm) {
 
@@ -112,13 +118,13 @@ namespace iniParser {
 
 				auto transplantPerkID = ini.GetValue(entry_name, "description");
 
-				if(!transplantPerkID) {
+				if (!transplantPerkID) {
 
 					SKSE::log::info("Ini entry {} is invalid.", entry_name);
 					continue;
 				}
 
-				RE::BGSPerk* newDescriptionHolder; 
+				RE::BGSPerk* newDescriptionHolder;
 
 				newDescriptionHolder = FindPerkInArray(perk_array, transplantPerkID);
 
@@ -135,17 +141,13 @@ namespace iniParser {
 					SKSE::log::info("Entry {} contains invalid data.", entry_name);
 					continue;
 				}
-				
-				if (!manipulate::AdjustPerk(associatedForm, new_name, newDescriptionHolder)){
+
+				if (!manipulate::AdjustPerk(associatedForm, new_name, newDescriptionHolder)) {
 
 					SKSE::log::info("Entry {} could not be manipulated.", entry_name);
 					continue;
 				}
-
-				result.push_back(localEntry);
 			}
 		}
-		
-		return result;
 	}
 }
