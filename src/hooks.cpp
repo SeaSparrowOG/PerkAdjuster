@@ -147,10 +147,11 @@ namespace Hooks {
 		newData.managedPerk = originalPerk;
         newData.descriptionDonor = transplantPerk;
 		newData.description = std::string(tempString.c_str());
+		newData.INIHandler = a_configName;
 
 		if (IsPerkManagedINI(originalPerk, SwapPerkData, a_configName)) {
 
-			auto it = SwapPerkData.end();
+			auto it = SwapPerkData.begin();
 
 			for (it; it != SwapPerkData.end(); ++it) {
 
@@ -169,8 +170,6 @@ namespace Hooks {
 
 			SwapPerkData.erase(it);
 		}
-
-		newData.INIHandler = a_configName;
 
 		SwapPerkData.push_back(newData);
         ManagedPerks.push_back(originalPerk);
@@ -276,7 +275,7 @@ namespace Hooks {
 
 				if (tempData.description == tempString.c_str()) {
 
-					if (tempData.runtimeDescriptionDonor) {
+					if (!tempData.newNamePapyrus.empty()) {
 
 						return func(tempData.runtimeDescriptionDonor->As<RE::TESDescription>(), a_out, tempData.runtimeDescriptionDonor, a_fieldType);
 					}
