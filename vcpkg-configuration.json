@@ -12,6 +12,14 @@
         "packages": [
           "commonlibsse-ng"
         ]
+      },
+      {
+        "kind": "git",
+        "repository": "https://github.com/voidei/vcpkg-registry",
+        "baseline": "1d5364f0ee722ca34b6149fd5663ca7fabeba394",
+        "packages": [
+          "clib-util"
+        ]
       }
     ]
 }

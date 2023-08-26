@@ -18,21 +18,20 @@ if(DEFINED ENV{SKYRIM_MODS_FOLDER} AND IS_DIRECTORY "$ENV{SKYRIM_MODS_FOLDER}")
 endif()
 
 #===========================================================================
-#Plugin build options
+#Plugin build options 
 #===========================================================================
 find_package(CommonLibSSE CONFIG REQUIRED)
+find_path(CLIB_UTIL_INCLUDE_DIRS "ClibUtil/utils.hpp")
 
-#TODO: Actually implement this.
-#find_path(CLIB_UTIL_INCLUDE_DIRS "ClibUtil/distribution.hpp")
 
 set(headers
         include/papyrusAPI.h
-		include/perkManipulator.h
+        include/hooks.h
         include/iniParser.h) 
 
 set(sources
 		src/papyrusAPI.cpp
-		src/perkManipulator.cpp
+        src/hooks.cpp
         src/iniParser.cpp
         src/main.cpp)
 
@@ -41,8 +40,7 @@ add_library("${PROJECT_NAME}::${PROJECT_NAME}" ALIAS "${PROJECT_NAME}")
 
 target_include_directories(${PROJECT_NAME}
         PRIVATE
-        #TODO: Implement this.
-        #${CLIB_UTIL_INCLUDE_DIRS}
+        $<INSTALL_INTERFACE:${CLIB_UTIL_INCLUDE_DIRS}>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/src>
         $<INSTALL_INTERFACE:src>)
@@ -69,9 +67,15 @@ if(DEFINED OUTPUT_FOLDER)
         POST_BUILD
         COMMAND "${CMAKE_COMMAND}" -E make_directory "${DLL_FOLDER}"
         COMMAND "${CMAKE_COMMAND}" -E copy_if_different "$<TARGET_FILE:${PROJECT_NAME}>" "${DLL_FOLDER}/$<TARGET_FILE_NAME:${PROJECT_NAME}>"
-
-        #TODO: Actually need to fix this. Should only apply if building on Debug but I can't be arsed.
-		#COMMAND "${CMAKE_COMMAND}" -E copy_if_different "$<TARGET_PDB_FILE:${PROJECT_NAME}>" "${DLL_FOLDER}/$<TARGET_PDB_FILE_NAME:${PROJECT_NAME}>"
         VERBATIM
     )
+
+    if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+        add_custom_command(
+            TARGET "${PROJECT_NAME}"
+            POST_BUILD
+            COMMAND "${CMAKE_COMMAND}" -E copy_if_different "$<TARGET_PDB_FILE:${PROJECT_NAME}>" "${DLL_FOLDER}/$<TARGET_PDB_FILE_NAME:${PROJECT_NAME}>"
+            VERBATIM
+        )
+    endif()
 endif()

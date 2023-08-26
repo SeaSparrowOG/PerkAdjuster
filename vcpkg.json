@@ -1,8 +1,9 @@
 {
-    "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
-    "name": "perk-renamer",
-    "version-string": "1.0.0",
+  "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
+  "name": "perk-renamer",
+  "version-string": "1.0.0",
   "dependencies": [
-    "commonlibsse-ng"
+    "commonlibsse-ng",
+    "clib-util"
   ]
 }
