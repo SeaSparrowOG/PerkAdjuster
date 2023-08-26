@@ -177,6 +177,8 @@ namespace Hooks {
 
 		SwapPerkData.push_back(newData);
         ManagedPerks.push_back(originalPerk);
+
+		originalPerk->fullName = a_newName;
         return true;
     }
 
