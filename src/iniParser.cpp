@@ -54,33 +54,33 @@ namespace INIParser {
 			for (auto& localEntry : entries) {
 
 				auto entryName = localEntry.pItem;
-				auto originalPerk = ini.GetValue(entryName, "iOriginalPerkID");
-				auto originalPerkOrigin = ini.GetValue(entryName, "sOriginalPerkFile");
-				auto transplantPerk = ini.GetValue(entryName, "iTransplantPerkID");
-				auto transplantPerkOrigin = ini.GetValue(entryName, "sTransplantPerkFile");
-				auto newName = ini.GetValue(entryName, "sNewName");
+				auto originalPerk = ini.GetValue(entryName, "OriginalPerkID");
+				auto originalPerkOrigin = ini.GetValue(entryName, "OriginalPerkFile");
+				auto transplantPerk = ini.GetValue(entryName, "TransplantPerkID");
+				auto transplantPerkOrigin = ini.GetValue(entryName, "TransplantPerkFile");
+				auto newName = ini.GetValue(entryName, "NewName");
 
 				if (!originalPerkOrigin) {
 
-					SKSE::log::info("Failed to read entry < {} > in INI [ {} ] - sOriginalPerkFile not found.", entryName, foundPath);
+					SKSE::log::info("Failed to read entry < {} > in INI [ {} ] - OriginalPerkFile not found.", entryName, foundPath);
 					continue;
 				}
 
 				if (!transplantPerkOrigin) {
 
-					SKSE::log::info("Failed to read entry < {} > in INI [ {} ] - sTransplantPerkFile not found.", entryName, foundPath);
+					SKSE::log::info("Failed to read entry < {} > in INI [ {} ] - TransplantPerkFile not found.", entryName, foundPath);
 					continue;
 				}
 
 				if (!originalPerk) {
 
-					SKSE::log::info("Failed to read entry < {} > in INI [ {} ] - iOriginalPerkID not found.", entryName, foundPath);
+					SKSE::log::info("Failed to read entry < {} > in INI [ {} ] - OriginalPerkID not found.", entryName, foundPath);
 					continue;
 				}
 
 				if (!transplantPerk) {
 
-					SKSE::log::info("Failed to read entry < {} > in INI [ {} ] - iTransplantPerkID not found.", entryName, foundPath);
+					SKSE::log::info("Failed to read entry < {} > in INI [ {} ] - TransplantPerkID not found.", entryName, foundPath);
 					continue;
 				}
 
