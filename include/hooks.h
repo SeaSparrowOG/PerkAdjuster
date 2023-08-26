@@ -2,13 +2,11 @@
 
 namespace Hooks {
 
-	//Other viable hook offsets: 0xB40, 0xC84, 0xD7C
+	//Tested hook offsets: 0xB40, 0xC84, 0xD7C
 	//Credit to NoahBoddie for the offsets:
 	//      Github: https://github.com/NoahBoddie
 	//   Nexusmods: https://www.nexusmods.com/skyrimspecialedition/users/13069030
-	inline static REL::Relocation<std::uintptr_t> Get_Description_Hook1{ REL::ID(52527), 0xB40 };
-	inline static REL::Relocation<std::uintptr_t> Get_Description_Hook2{ REL::ID(52527), 0xC84 };
-	inline static REL::Relocation<std::uintptr_t> Get_Description_Hook3{ REL::ID(52527), 0xD7C };
+	inline static REL::Relocation<std::uintptr_t> Get_Description_Hook{ REL::ID(52527), 0xD7C };
 
 	//Main manager class for the framework. Stores information, and triggers the hook.
 	class DescriptionManager {

@@ -2,73 +2,9 @@
 
 namespace Hooks {
 
-	//PO3, relinquish this to me.
-	static std::string GetFormEditorID(const RE::TESForm* a_form)
-	{
-		switch (a_form->GetFormType()) {
-		case RE::FormType::Keyword:
-		case RE::FormType::LocationRefType:
-		case RE::FormType::Action:
-		case RE::FormType::MenuIcon:
-		case RE::FormType::Global:
-		case RE::FormType::HeadPart:
-		case RE::FormType::Race:
-		case RE::FormType::Sound:
-		case RE::FormType::Script:
-		case RE::FormType::Navigation:
-		case RE::FormType::Cell:
-		case RE::FormType::WorldSpace:
-		case RE::FormType::Land:
-		case RE::FormType::NavMesh:
-		case RE::FormType::Dialogue:
-		case RE::FormType::Quest:
-		case RE::FormType::Idle:
-		case RE::FormType::AnimatedObject:
-		case RE::FormType::ImageAdapter:
-		case RE::FormType::VoiceType:
-		case RE::FormType::Ragdoll:
-		case RE::FormType::DefaultObject:
-		case RE::FormType::MusicType:
-		case RE::FormType::StoryManagerBranchNode:
-		case RE::FormType::StoryManagerQuestNode:
-		case RE::FormType::StoryManagerEventNode:
-		case RE::FormType::SoundRecord:
-			return a_form->GetFormEditorID();
-		default:
-		{
-			static auto tweaks = GetModuleHandle(L"po3_Tweaks");
-			if (tweaks) {
-				static auto func = reinterpret_cast<const char* (*)(std::uint32_t)>(GetProcAddress(tweaks, "GetFormEditorID"));
-				if (func) {
-					return func(a_form->formID);
-				}
-			}
-			return {};
-		}
-		}
-	}
-
 	//=========================================
 	//            Helper Functions
 	//=========================================
-
-	RE::BGSPerk* GetPerkFromEditorID(std::string a_EDID) {
-		RE::BGSPerk* defaultResponse = nullptr;
-
-		auto perkArray = RE::TESDataHandler::GetSingleton()->GetFormArray<RE::BGSPerk>();
-
-		for (auto it = perkArray.begin(); it != perkArray.end(); ++it) {
-
-			RE::BGSPerk* candidatePerk = *it;
-			std::string candidateEDID = GetFormEditorID(candidatePerk);
-
-			if (candidateEDID == a_EDID) {
-
-				return candidatePerk;
-			}
-		}
-		return defaultResponse;
-	}
 
 	managedPerkData GeneratePerkData(RE::BGSPerk* a_perk, RE::BGSPerk* a_transplantPerk, std::string a_newName, 
 		bool a_bManagedByPapyrus, bool a_bManagedByINI, std::string a_managerConfig) {
@@ -77,7 +13,6 @@ namespace Hooks {
 
 		newData.managedByINI = a_bManagedByINI;
 		newData.managedByPapyrus = a_bManagedByPapyrus;
-		newData.EDID = GetFormEditorID(a_perk);
 		newData.originalName = a_perk->GetName();
 		
 		if (a_bManagedByINI) {
@@ -118,7 +53,7 @@ namespace Hooks {
 				else {
 
 					//INI conflict.
-					SKSE::log::warn("INI conflict for < {} >.", perkData.EDID);
+					SKSE::log::warn("INI conflict for < {} >.", a_perk->GetName());
 					SKSE::log::warn("Old INI holder : < {} > , new INI holder : < {} > .", perkData.INIHandler, a_configName);
 				}
 
@@ -150,6 +85,12 @@ namespace Hooks {
 	//            Class Functions
 	//=========================================
 
+	DescriptionManager* DescriptionManager::GetSingleton() {
+
+		DescriptionManager singleton;
+		return &singleton;
+	}
+
     bool DescriptionManager::AddManagedPerkINI(std::string a_originalPerk, std::string a_transplantPerk, std::string a_newName, std::string a_configName) {
 
 		if (a_originalPerk.empty() || a_transplantPerk.empty() || a_newName.empty() || a_configName.empty()) {
@@ -158,21 +99,18 @@ namespace Hooks {
 			return false;
 		}
 
-		RE::BGSPerk* originalPerk;
-		originalPerk = GetPerkFromEditorID(a_originalPerk);
+		RE::BGSPerk* originalPerk = RE::TESForm::LookupByEditorID<RE::BGSPerk>(a_originalPerk);
+		RE::BGSPerk* transplantPerk = RE::TESForm::LookupByEditorID<RE::BGSPerk>(a_transplantPerk);
 
 		if (!originalPerk) {
 
-			SKSE::log::warn("Invalid entry in {}, with EDID: {}.", a_configName, a_originalPerk);
+			SKSE::log::info("Perks not found for swap [ {} ] in INI < {} >.", a_originalPerk, a_configName);
 			return false;
 		}
 
-		RE::BGSPerk* transplantPerk;
-		transplantPerk = GetPerkFromEditorID(a_transplantPerk);
-
 		if (!transplantPerk) {
 
-			SKSE::log::warn("Invalid entry in {} - section {}, with EDID: {}.", a_configName, a_originalPerk, a_transplantPerk);
+			SKSE::log::info("Failed to find perk description < {} > for swap [ {} ] in INI < {} >.",a_transplantPerk, a_originalPerk, a_configName);
 			return false;
 		}
 
@@ -253,30 +191,9 @@ namespace Hooks {
         return bSuccess;
     }
 
-    DescriptionManager* DescriptionManager::GetSingleton() {
-
-        DescriptionManager singleton;
-        return &singleton;
-    }
-
     bool DescriptionManager::RemoveManagedPerkPapyrus(RE::BGSPerk* a_originalPerk) {
 
-		/* TODO: Implement this. Should be useful later.
-		managedPerkData newData;
-		newData = GeneratePerkData(a_originalPerk, SwapPerkData);
-
-		if (newData.runtimeDescriptionDonor) {
-
-			auto it = std::find_if(SwapPerkData.begin(), SwapPerkData.end(), newData.runtimeDescriptionDonor == a_originalPerk);
-
-			if (it != SwapPerkData.end()) {
-
-				SwapPerkData.erase(it);
-				return true;
-			}
-		}
-		*/
-
+		//TODO: Implement this. Should be useful later.
         return false;
     }
 
@@ -312,9 +229,8 @@ namespace Hooks {
 
 	bool DescriptionManager::InstallHook() {
 
-		write_thunk_call<DescriptionManager>(Hooks::Get_Description_Hook1.address());
-		write_thunk_call<DescriptionManager>(Hooks::Get_Description_Hook2.address());
-		write_thunk_call<DescriptionManager>(Hooks::Get_Description_Hook3.address());
+		//Seems to be the only hook needed. If stuff disappears, I will add the other 2 in.
+		write_thunk_call<DescriptionManager>(Hooks::Get_Description_Hook.address());
 		return true;
 	}
 }

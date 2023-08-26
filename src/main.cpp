@@ -18,6 +18,9 @@ void SetupLog() {
     spdlog::set_default_logger(std::move(loggerPtr));
     spdlog::set_level(spdlog::level::info);
     spdlog::flush_on(spdlog::level::info);
+
+    //Pattern
+    spdlog::set_pattern("[%l]: %v");
 }
 
 void MessageHandler(SKSE::MessagingInterface::Message* a_message)
