@@ -28,6 +28,8 @@ void write_thunk_call(std::uintptr_t a_src)
 //More code readability, my style.
 struct managedPerkData {
 
+	bool         managedByINI;
+	bool         managedByPapyrus;
 	std::string  originalName;
 	std::string  newName;
 	std::string  newNamePapyrus;

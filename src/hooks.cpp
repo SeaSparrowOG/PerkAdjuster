@@ -48,6 +48,10 @@ namespace Hooks {
 		}
 	}
 
+	//=========================================
+	//            Helper Functions
+	//=========================================
+
 	RE::BGSPerk* GetPerkFromEditorID(std::string a_EDID) {
 		RE::BGSPerk* defaultResponse = nullptr;
 
@@ -66,30 +70,35 @@ namespace Hooks {
 		return defaultResponse;
 	}
 
-	managedPerkData GeneratePerkData(RE::BGSPerk* a_perk, std::vector<managedPerkData> a_SwapData) {
+	managedPerkData GeneratePerkData(RE::BGSPerk* a_perk, RE::BGSPerk* a_transplantPerk, std::string a_newName, 
+		bool a_bManagedByPapyrus, bool a_bManagedByINI, std::string a_managerConfig) {
 
-		managedPerkData perkData;
+		managedPerkData newData;
 
-		for (auto it = a_SwapData.begin(); it != a_SwapData.end(); ++it) {
+		newData.managedByINI = a_bManagedByINI;
+		newData.managedByPapyrus = a_bManagedByPapyrus;
+		newData.EDID = GetFormEditorID(a_perk);
+		newData.originalName = a_perk->GetName();
+		
+		if (a_bManagedByINI) {
 
-			managedPerkData candidateData;
-			candidateData = *it;
+			newData.newName = a_newName;
+			newData.descriptionDonor = a_transplantPerk;
+			newData.INIHandler = a_managerConfig;
+		}
+		else {
 
-			if (a_perk == candidateData.managedPerk) {
-
-				return candidateData;
-			}
+			newData.newNamePapyrus = a_newName;
+			newData.runtimeDescriptionDonor = a_transplantPerk;
 		}
 
-		RE::BSString tempString;
-		a_perk->GetDescription(tempString, a_perk);
+		newData.managedPerk = a_perk;
 
-		perkData.originalName = a_perk->GetName();
-		perkData.EDID = GetFormEditorID(a_perk);
-		perkData.managedPerk = a_perk;
-		perkData.description = std::string(tempString.c_str());
+		RE::BSString descriptionHolder;
+		a_perk->GetDescription(descriptionHolder, a_perk);
+		newData.description = std::string(descriptionHolder.c_str());
 
-		return perkData;
+		return newData;
 	}
 
 	bool IsPerkManagedINI(RE::BGSPerk* a_perk, std::vector<managedPerkData> a_managedPerkData, std::string a_configName) {
@@ -97,19 +106,49 @@ namespace Hooks {
 		for (auto it = a_managedPerkData.begin(); it != a_managedPerkData.end(); ++it) {
 
 			RE::BGSPerk* managedPerk;
-			managedPerkData managedPerkData = *it;
+			managedPerkData perkData = *it;
 
-			if (managedPerkData.managedPerk == a_perk) {
+			if (perkData.managedPerk == a_perk) {
 
-				//INI conflict.
-				SKSE::log::warn("INI conflict for < {} >.", managedPerkData.EDID);
-				SKSE::log::warn("Old INI holder : < {} > , new INI holder : < {} > .", managedPerkData.INIHandler, a_configName);
+				if (a_configName.empty()) {
+
+					//Perk managed by INI.
+					SKSE::log::info("Papyrus API call to edit < {} > that is already managed by config < {} >.", a_perk->GetName(), perkData.INIHandler);
+				}
+				else {
+
+					//INI conflict.
+					SKSE::log::warn("INI conflict for < {} >.", perkData.EDID);
+					SKSE::log::warn("Old INI holder : < {} > , new INI holder : < {} > .", perkData.INIHandler, a_configName);
+				}
+
 				return true;
 			} 
 		}
 
 		return false;
 	}
+
+	bool IsPerkManagedPapyrus(managedPerkData a_data, std::vector<managedPerkData> a_managedPerkData) {
+
+		for (auto it = a_managedPerkData.begin(); it != a_managedPerkData.end(); ++it) {
+
+			managedPerkData tempData;
+			tempData = *it;
+
+			if (tempData.managedPerk == a_data.managedPerk) {
+
+				SKSE::log::info("Perk < {} > is already managed by Papyrus. Previous definition will be removed.", tempData.originalName);
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	//=========================================
+	//            Class Functions
+	//=========================================
 
     bool DescriptionManager::AddManagedPerkINI(std::string a_originalPerk, std::string a_transplantPerk, std::string a_newName, std::string a_configName) {
 
@@ -137,17 +176,8 @@ namespace Hooks {
 			return false;
 		}
 
-		RE::BSString tempString;
-		originalPerk->GetDescription(tempString, originalPerk);
-
         managedPerkData newData;
-		newData.originalName = originalPerk->GetName();
-		newData.newName = a_newName;
-		newData.EDID = GetFormEditorID(originalPerk);
-		newData.managedPerk = originalPerk;
-        newData.descriptionDonor = transplantPerk;
-		newData.description = std::string(tempString.c_str());
-		newData.INIHandler = a_configName;
+		newData = GeneratePerkData(originalPerk, transplantPerk, a_newName, false, true, a_configName);
 
 		if (IsPerkManagedINI(originalPerk, SwapPerkData, a_configName)) {
 
@@ -191,10 +221,10 @@ namespace Hooks {
 		bSuccess = true;
 
 		managedPerkData newData;
-		newData = GeneratePerkData(a_originalPerk, SwapPerkData);
+		newData = GeneratePerkData(a_originalPerk, a_transplantPerk, a_newName, true, false, std::string());
 
 		//it is possible that newData is not actually new, and the perk has been managed in the past.
-		if (!newData.newName.empty() || !newData.newNamePapyrus.empty()) {
+		if (IsPerkManagedPapyrus(newData, SwapPerkData) || IsPerkManagedINI(a_originalPerk, SwapPerkData, std::string())) {
 
 			auto it = SwapPerkData.begin();
 
@@ -216,14 +246,6 @@ namespace Hooks {
 
 			SwapPerkData.erase(it);
 		}
-
-		RE::BSString tempString;
-		a_originalPerk->GetDescription(tempString, a_originalPerk);
-		a_originalPerk->fullName = a_newName;
-
-		newData.runtimeDescriptionDonor = a_transplantPerk;
-		newData.newNamePapyrus = a_newName;
-		newData.description = std::string(tempString.c_str());
 
 		SwapPerkData.push_back(newData);
 		ManagedPerks.push_back(a_originalPerk);
