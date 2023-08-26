@@ -81,9 +81,13 @@ namespace Hooks {
 			}
 		}
 
+		RE::BSString tempString;
+		a_perk->GetDescription(tempString, a_perk);
+
 		perkData.originalName = a_perk->GetName();
 		perkData.EDID = GetFormEditorID(a_perk);
 		perkData.managedPerk = a_perk;
+		perkData.description = std::string(tempString.c_str());
 
 		return perkData;
 	}
@@ -105,29 +109,6 @@ namespace Hooks {
 		}
 
 		return false;
-	}
-
-	std::vector<managedPerkData>::iterator GetManagedPerkIterator(RE::BGSPerk* a_perk, std::vector<managedPerkData> a_array) {
-
-		std::vector<managedPerkData>::iterator result = a_array.end();
-
-		for (auto it = a_array.begin(); it != a_array.end(); ++it) {
-
-			managedPerkData tempData;
-			RE::BGSPerk* tempPerk;
-			tempData = *it;
-			tempPerk = tempData.managedPerk;
-
-			if (tempPerk) {
-
-				if (tempPerk == a_perk) {
-
-					return it;
-				}
-			}
-		}
-
-		return result;
 	}
 
     bool DescriptionManager::AddManagedPerkINI(std::string a_originalPerk, std::string a_transplantPerk, std::string a_newName, std::string a_configName) {
@@ -157,7 +138,7 @@ namespace Hooks {
 		}
 
 		RE::BSString tempString;
-		originalPerk->GetDescription(tempString, transplantPerk);
+		originalPerk->GetDescription(tempString, originalPerk);
 
         managedPerkData newData;
 		newData.originalName = originalPerk->GetName();
@@ -169,7 +150,23 @@ namespace Hooks {
 
 		if (IsPerkManagedINI(originalPerk, SwapPerkData, a_configName)) {
 
-			auto it = GetManagedPerkIterator(originalPerk, SwapPerkData);
+			auto it = SwapPerkData.end();
+
+			for (it; it != SwapPerkData.end(); ++it) {
+
+				managedPerkData tempData;
+				RE::BGSPerk* tempPerk;
+				tempData = *it;
+				tempPerk = tempData.managedPerk;
+
+				if (tempPerk) {
+
+					if (tempPerk == newData.managedPerk) {
+						break;
+					}
+				}
+			}
+
 			SwapPerkData.erase(it);
 		}
 
@@ -195,18 +192,35 @@ namespace Hooks {
 		bSuccess = true;
 
 		managedPerkData newData;
-
-		//it is possible that newData is not actually new, and the perk has been managed in the past.
 		newData = GeneratePerkData(a_originalPerk, SwapPerkData);
 
-		if (newData.runtimeDescriptionDonor) {
+		//it is possible that newData is not actually new, and the perk has been managed in the past.
+		if (!newData.newName.empty() || !newData.newNamePapyrus.empty()) {
 
-			auto it = GetManagedPerkIterator(a_originalPerk, SwapPerkData);
+			auto it = SwapPerkData.begin();
+
+			for (it; it != SwapPerkData.end(); ++it) {
+
+				managedPerkData tempData;
+				RE::BGSPerk* tempPerk;
+				tempData = *it;
+				tempPerk = tempData.managedPerk;
+
+				if (tempPerk) {
+
+					if (tempPerk == newData.managedPerk) {
+
+						break;
+					}
+				}
+			}
+
 			SwapPerkData.erase(it);
 		}
 
 		RE::BSString tempString;
-		a_transplantPerk->GetDescription(tempString, a_originalPerk);
+		a_originalPerk->GetDescription(tempString, a_originalPerk);
+		a_originalPerk->fullName = a_newName;
 
 		newData.runtimeDescriptionDonor = a_transplantPerk;
 		newData.newNamePapyrus = a_newName;
@@ -261,6 +275,11 @@ namespace Hooks {
 				tempData = *it;
 
 				if (tempData.description == tempString.c_str()) {
+
+					if (tempData.runtimeDescriptionDonor) {
+
+						return func(tempData.runtimeDescriptionDonor->As<RE::TESDescription>(), a_out, tempData.runtimeDescriptionDonor, a_fieldType);
+					}
 
 					return func(tempData.descriptionDonor->As<RE::TESDescription>(), a_out, tempData.descriptionDonor, a_fieldType);
 				}

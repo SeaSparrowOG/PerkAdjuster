@@ -39,6 +39,17 @@ struct managedPerkData {
 	RE::BGSPerk* descriptionDonor;
 	RE::BGSPerk* runtimeDescriptionDonor;
 
-
+	
 	managedPerkData() = default;
+	void to_String() {
+
+		SKSE::log::info("Managed Perk Data:.");
+		SKSE::log::info("Original Name:               {}.", originalName);
+		SKSE::log::info("New Name:                    {}.", newName);
+		SKSE::log::info("New Name (Papyrus):          {}.", newNamePapyrus);
+		SKSE::log::info("EditorID:                    {}.", EDID);
+		SKSE::log::info("Description:                 {}", description);
+		SKSE::log::info("INI Handler:                 {}.", INIHandler);
+		SKSE::log::info("Managed Perk:                {}.", managedPerk->GetName());
+	}
 };

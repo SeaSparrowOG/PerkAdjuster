@@ -8,7 +8,7 @@ namespace PapyrusAPI {
 		return { 1, 0, 0 };
 	}
 
-	bool ManipulatePerk(VM*, StackID a_StackID, RE::StaticFunctionTag*, RE::BGSPerk* a_perk, RE::BSString a_newName, RE::BGSPerk* a_transplantPerk) {
+	bool ManipulatePerk(VM*, StackID a_StackID, RE::StaticFunctionTag*, RE::BGSPerk* a_perk, RE::BGSPerk* a_transplantPerk, RE::BSString a_newName) {
 
 		if (!a_perk || !a_transplantPerk || a_newName.empty()) {
 
