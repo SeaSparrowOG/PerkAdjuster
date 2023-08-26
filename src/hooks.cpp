@@ -17,13 +17,29 @@ namespace Hooks {
 		
 		if (a_bManagedByINI) {
 
-			newData.newName = a_newName;
+			if (a_newName.empty()) {
+
+				newData.newName = a_perk->GetName();
+			}
+			else {
+
+				newData.newName = a_newName;
+			}
+
 			newData.descriptionDonor = a_transplantPerk;
 			newData.INIHandler = a_managerConfig;
 		}
 		else {
 
-			newData.newNamePapyrus = a_newName;
+			if (a_newName.empty()) {
+
+				newData.newNamePapyrus = a_perk->GetName();
+			}
+			else {
+
+				newData.newNamePapyrus = a_newName;
+			}
+
 			newData.runtimeDescriptionDonor = a_transplantPerk;
 		}
 
@@ -34,6 +50,23 @@ namespace Hooks {
 		newData.description = std::string(descriptionHolder.c_str());
 
 		return newData;
+	}
+
+	bool IsModPresent(std::string a_fileName) {
+
+		auto dataHandler = RE::TESDataHandler::GetSingleton();
+
+		if (dataHandler->LookupLoadedLightModByName(a_fileName)) {
+
+			return true;
+		}
+
+		if (dataHandler->LookupLoadedModByName(a_fileName)) {
+
+			return true;
+		}
+
+		return false;
 	}
 
 	bool IsPerkManagedINI(RE::BGSPerk* a_perk, std::vector<managedPerkData> a_managedPerkData, std::string a_configName) {
@@ -91,26 +124,44 @@ namespace Hooks {
 		return &singleton;
 	}
 
-    bool DescriptionManager::AddManagedPerkINI(std::string a_originalPerk, std::string a_transplantPerk, std::string a_newName, std::string a_configName) {
+    bool DescriptionManager::AddManagedPerkINI(RE::FormID a_originalPerkID, RE::FormID a_transplantPerkID, std::string a_newName,
+		std::string a_configName, std::string a_originalOrigin, std::string a_transplantOrigin) {
 
-		if (a_originalPerk.empty() || a_transplantPerk.empty() || a_newName.empty() || a_configName.empty()) {
+		RE::TESForm* originalForm;
+		RE::TESForm* transplantForm;
 
-			SKSE::log::error("Unhandled error while attempting to parse an INI file.");
+		originalForm = RE::TESDataHandler::GetSingleton()->LookupForm(a_originalPerkID, a_originalOrigin);
+
+		if (!originalForm) {
+
+			SKSE::log::info("No associated form for swap [ {} ] in INI < {} >.", a_originalPerkID, a_configName);
 			return false;
 		}
 
-		RE::BGSPerk* originalPerk = RE::TESForm::LookupByEditorID<RE::BGSPerk>(a_originalPerk);
-		RE::BGSPerk* transplantPerk = RE::TESForm::LookupByEditorID<RE::BGSPerk>(a_transplantPerk);
+		transplantForm = RE::TESDataHandler::GetSingleton()->LookupForm(a_transplantPerkID, a_transplantOrigin);
+
+		if (!transplantForm) {
+
+			SKSE::log::info("No associated description form < {} > for swap [ {} ] in INI < {} >.", a_transplantPerkID, a_originalPerkID, a_configName);
+			return false;
+		}
+
+		RE::BGSPerk* originalPerk;
+		RE::BGSPerk* transplantPerk;
+
+		originalPerk = originalForm->As<RE::BGSPerk>();
 
 		if (!originalPerk) {
 
-			SKSE::log::info("Perks not found for swap [ {} ] in INI < {} >.", a_originalPerk, a_configName);
+			SKSE::log::info("Perks not found for swap [ {} ] in INI < {} >.", a_originalPerkID, a_configName);
 			return false;
 		}
 
+		transplantPerk = transplantForm->As<RE::BGSPerk>();
+
 		if (!transplantPerk) {
 
-			SKSE::log::info("Failed to find perk description < {} > for swap [ {} ] in INI < {} >.",a_transplantPerk, a_originalPerk, a_configName);
+			SKSE::log::info("Failed to find perk description < {} > for swap [ {} ] in INI < {} >.",a_transplantPerkID, a_originalPerkID, a_configName);
 			return false;
 		}
 
@@ -142,7 +193,13 @@ namespace Hooks {
 		SwapPerkData.push_back(newData);
         ManagedPerks.push_back(originalPerk);
 
-		originalPerk->fullName = a_newName;
+		SKSE::log::info("New Swap: < {} > with < {} >.", newData.originalName, newData.descriptionDonor->GetName());
+
+		if (!a_newName.empty()) {
+
+			originalPerk->fullName = a_newName;
+		}
+
         return true;
     }
 

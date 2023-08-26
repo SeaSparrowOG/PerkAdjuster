@@ -12,7 +12,8 @@ namespace Hooks {
 	class DescriptionManager {
 
 	public:
-		static bool                         AddManagedPerkINI(std::string a_originalPerk, std::string a_transplantPerk, std::string a_newName, std::string a_configName);
+		static bool                         AddManagedPerkINI(RE::FormID a_originalPerkID, RE::FormID a_transplantPerkID, 
+			std::string a_newName, std::string a_configName, std::string a_originalOrigin, std::string a_transplantOrigin);
 		static bool                         AddManagedPerkPapyrus(RE::BGSPerk* a_originalPerk, RE::BGSPerk* a_transplantPerk, std::string a_newName);
 		static DescriptionManager*          GetSingleton();
 		static bool                         RemoveManagedPerkPapyrus(RE::BGSPerk* a_originalPerk); 
