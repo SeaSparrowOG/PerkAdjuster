@@ -65,17 +65,10 @@ namespace NameHolder {
 			if (!rulesField || !rulesField.isArray()) continue;
 
 			for (auto& rule : rulesField) {
-				auto& descriptionField = rule["description"];
-				auto& perkField = rule["perk"];
 				auto& conditionsField = rule["conditions"];
-				if (!descriptionField || !perkField) continue;
-				if (!descriptionField.isString() || !perkField.isString()) continue;
+				auto& changesField = rule["changes"];
+				if (!changesField || !changesField.isArray()) continue;
 				if (conditionsField && !conditionsField.isObject()) continue;
-
-				auto* perk = GetPerkFromText(perkField.asString());
-				if (!perk) continue;
-				std::string newDescription = descriptionField.asString();
-				if (newDescription.empty()) continue;
 
 				bool match = true;
 				uint8_t matchDegree = 0;
@@ -94,12 +87,24 @@ namespace NameHolder {
 					}
 				}
 				if (!match) continue;
-				if (IsManagedPerk(perk) && (matchDegree < storedValues[perk].conditionMatches)) continue;
 
-				auto newData = ConditionalDescription();
-				newData.conditionMatches = matchDegree;
-				newData.a_newDesctription = newDescription;
-				storedValues[perk] = newData;
+				for (auto& change : changesField) {
+					auto& perkField = change["perk"];
+					auto& descriptionField = change["description"];
+					if (!perkField || !descriptionField) continue;
+					if (!descriptionField.isString() || !perkField.isString()) continue;
+
+					auto* perk = GetPerkFromText(perkField.asString());
+					if (!perk) continue;
+					std::string newDescription = descriptionField.asString();
+					if (newDescription.empty()) continue;
+					if (IsManagedPerk(perk) && (matchDegree < storedValues[perk].conditionMatches)) continue;
+
+					auto newData = ConditionalDescription();
+					newData.conditionMatches = matchDegree;
+					newData.a_newDesctription = newDescription;
+					storedValues[perk] = newData;
+				}
 			}
 		}
 		return true;
