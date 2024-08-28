@@ -31,20 +31,9 @@ namespace {
 }
 
 namespace NameHolder {
-	bool NameHolder::IsManagedPerk(RE::BGSPerk* a_perk)
+	bool NameHolder::Install()
 	{
-		return storedValues.contains(a_perk);
-	}
-
-	std::string NameHolder::GetNewDescription(RE::BGSPerk* a_perk)
-	{
-		const char* response = "";
-		if (!storedValues.contains(a_perk)) return response;
-		return storedValues[a_perk].a_newDesctription;
-	}
-
-	bool NameHolder::ReadSettings()
-	{
+		std::unordered_map<std::string, int> matches;
 		std::vector<std::string> configPaths = std::vector<std::string>();
 		try {
 			configPaths = clib_util::distribution::get_configs(R"(Data\SKSE\Plugins\PerkRenamer\)", "", ".json"sv);
@@ -74,7 +63,7 @@ namespace NameHolder {
 				uint8_t matchDegree = 0;
 				if (conditionsField) {
 					auto& pluginConditions = conditionsField["plugins"];
-					if (!pluginConditions || !pluginConditions.isArray());
+					if (!pluginConditions || !pluginConditions.isArray()) continue;
 				
 					for (auto& pluginField : pluginConditions) {
 						if (!pluginField.isString()) continue;
@@ -96,17 +85,33 @@ namespace NameHolder {
 
 					auto* perk = GetPerkFromText(perkField.asString());
 					if (!perk) continue;
+
+					RE::BSString oldDescription;
+					perk->GetDescription(oldDescription, perk);
+					if (oldDescription.empty()) continue;
+
 					std::string newDescription = descriptionField.asString();
 					if (newDescription.empty()) continue;
-					if (IsManagedPerk(perk) && (matchDegree < storedValues[perk].conditionMatches)) continue;
 
-					auto newData = ConditionalDescription();
-					newData.conditionMatches = matchDegree;
-					newData.a_newDesctription = newDescription;
-					storedValues[perk] = newData;
+					if (matches.contains(newDescription) && matches[newDescription] > matchDegree) continue;
+
+					matches[newDescription] = matchDegree;
+					if (descriptionMatches.contains(oldDescription.c_str())) {
+						descriptionMatches.erase(oldDescription.c_str());
+					}
+					descriptionMatches[oldDescription.c_str()] = newDescription;
+					_loggerInfo("Created match: {} - {}", oldDescription.c_str(), descriptionMatches[oldDescription.c_str()]);
 				}
 			}
 		}
 		return true;
+	}
+
+	std::string NameHolder::GetNewDescription(std::string a_inString)
+	{
+		if (descriptionMatches.contains(a_inString)) {
+			return descriptionMatches[a_inString];
+		}
+		return std::string();
 	}
 }

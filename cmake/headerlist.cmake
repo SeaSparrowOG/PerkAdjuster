@@ -1,5 +1,5 @@
 set(headers ${headers}
-	include/PCH.h
-	include/hooks.h
-	include/nameHolder.h
+	src/PCH.h
+	src/hooks.h
+	src/nameHolder.h
 )
