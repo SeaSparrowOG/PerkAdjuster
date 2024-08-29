@@ -1,5 +1,5 @@
 set(headers ${headers}
 	src/PCH.h
-	src/hooks.h
-	src/nameHolder.h
+	src/perkManipulator.h
+	src/settings.h
 )

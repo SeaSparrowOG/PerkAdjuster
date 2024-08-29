@@ -1,5 +1,7 @@
 #include <spdlog/sinks/basic_file_sink.h>
-#include "hooks.h"
+
+#include "settings.h"
+#include "perkManipulator.h"
 
 void SetupLog() {
     auto logsFolder = SKSE::log::log_directory();
@@ -26,7 +28,8 @@ void SetupLog() {
 void MessageHandler(SKSE::MessagingInterface::Message* a_message) {
     switch (a_message->type) {
     case SKSE::MessagingInterface::kDataLoaded:
-        Hooks::Get_Description_Hook::Install();
+        Settings::Read();
+        PerkManipulation::Manipulator::Install();
         break;
     default:
         break;
