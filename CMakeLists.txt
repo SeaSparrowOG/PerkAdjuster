@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.21)
 set(PROJECT_AUTHOR "SeaSparrow" CACHE STRING "")
-set(NAME "PerkRenamer" CACHE STRING "")
+set(NAME "PerkAdjuster" CACHE STRING "")
 set(VERSION 2.0.0 CACHE STRING "")
 
 # ---- Options ----

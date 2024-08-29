@@ -90,8 +90,7 @@ namespace Settings {
 						continue;
 					}
 
-					auto response = PerkManipulation::Manipulator::ChangeDescription(newDescription, descriptionOut.c_str(), matchDegree);
-					_loggerInfo("{}", response);
+					PerkManipulation::Manipulator::ChangeDescription(newDescription, descriptionOut.c_str(), matchDegree);
 				}
 			}
 		}
