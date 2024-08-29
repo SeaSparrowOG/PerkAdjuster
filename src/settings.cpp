@@ -3,6 +3,33 @@
 #include "perkManipulator.h"
 
 namespace Settings {
+	static inline void FindNode(Json::Value& a_perkField,
+		std::vector<RE::BGSSkillPerkTreeNode*>& a_result,
+		RE::ActorValueInfo* a_tree) {
+		for (auto& field : a_perkField) {
+			if (!field.isString()) continue;
+			auto* perk = GetFormFromString<RE::BGSPerk>(field.asString());
+			if (!perk) continue;
+
+			auto itStart = a_tree->perkTree->children.begin();
+			auto itEnd = a_tree->perkTree->children.end();
+			bool found = false;
+			for (; !found && itStart != itEnd; ++itStart) {
+				auto* node = *itStart;
+				auto* treePerk = node->perk;
+				if (treePerk != perk) continue;
+
+				found = true;
+				a_result.push_back(*itStart);
+			}
+
+			if (!found) {
+				//TODO: Figure out a proper way to handle perks that WILL be added to the perk tree.
+				_loggerError("Perk {} was found, but was not in the tree.", field.asString());
+			}
+		}
+	}
+
 	void ReadDescription(Json::Value& a_descriptionField) {
 		auto* dataHandler = RE::TESDataHandler::GetSingleton();
 
@@ -86,7 +113,58 @@ namespace Settings {
 	}
 
 	void ReadAdditions(Json::Value& a_additionsField) {
+		auto* dataHandler = RE::TESDataHandler::GetSingleton();
 
+		for (auto& field : a_additionsField) {
+			auto& perkField = field["perk"];
+			auto& skillField = field["skill"];
+			auto& xField = field["x"];
+			auto& yField = field["y"];
+			auto& parentField = field["parents"];
+			auto& childField = field["children"];
+
+			if (!(perkField && skillField && xField && yField)) {
+				_loggerError("Missing at least one field in the perk addition section. Section won't be read.");
+				continue;
+			}
+
+			if (!perkField.isString() || !skillField.isString()) {
+				_loggerError("At least one string field in the perk addition section is not a string. Section won't be read.");
+				continue;
+			}
+
+			if (!xField.isDouble() || !yField.isDouble()) {
+				_loggerError("At least one float field in the perk addition section is not a float. Section won't be read.");
+				continue;
+			}
+
+			if (parentField && !parentField.isArray()) {
+				_loggerError("Parents field is not an array. Section won't be read.");
+				continue;
+			}
+
+			if (childField && !childField.isArray()) {
+				_loggerError("Children field is not an array. Section won't be read.");
+				continue;
+			}
+
+			auto* perk = GetFormFromString<RE::BGSPerk>(perkField.asString());
+			auto* avif = GetFormFromString<RE::ActorValueInfo>(skillField.asString());
+			if (!avif || !perk) {
+				_loggerError("Actor value or perk not found. Section won't be read. Strings: {} // {}", skillField.asString(), perkField.asString());
+				continue;
+			}
+			float x = xField.asFloat();
+			float y = yField.asFloat();
+
+			std::vector<RE::BGSSkillPerkTreeNode*> parents{};
+			std::vector<RE::BGSSkillPerkTreeNode*> children{};
+
+			if (parentField) { FindNode(parentField, parents, avif); }
+			if (childField) { FindNode(childField, children, avif); }
+
+			PerkManipulation::Manipulator::PlaceNewPerk(perk, avif, x, y, parents, children);
+		}
 	}
 
 	bool Read() {

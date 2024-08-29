@@ -1,5 +1,23 @@
 #include "perkManipulator.h"
 
+namespace {
+	size_t GetTreeSize(RE::BGSSkillPerkTreeNode* a_node, std::vector<RE::BGSSkillPerkTreeNode*>* perks = nullptr) {
+		if (!perks) {
+			perks = new std::vector<RE::BGSSkillPerkTreeNode*>();
+		}
+
+		if (std::find(perks->begin(), perks->end(), a_node) != perks->end()) {
+			return perks->size();
+		}
+		perks->push_back(a_node);
+
+		for (auto* child : a_node->children) {
+			GetTreeSize(child, perks);
+		}
+
+		return perks->size();
+	}
+}
 namespace PerkManipulation {
 	bool Manipulator::Install()
 	{
@@ -25,20 +43,19 @@ namespace PerkManipulation {
 	}
 
 	void Manipulator::PlaceNewPerk(RE::BGSPerk* a_newPerk, 
-		RE::ActorValueInfo* a_targetValue, 
-		int32_t a_targetIndex, 
+		RE::ActorValueInfo* a_targetValue,
 		float a_x, float a_y, 
 		std::vector<RE::BGSSkillPerkTreeNode*> a_parents, 
 		std::vector<RE::BGSSkillPerkTreeNode*> a_children)
 	{
-		auto* newNode = new RE::BGSSkillPerkTreeNode(a_targetIndex, a_targetValue);
+		size_t index = GetTreeSize(a_targetValue->perkTree) + 2;
+
+		auto* newNode = new RE::BGSSkillPerkTreeNode(index, a_targetValue);
 		newNode->perk = a_newPerk;
 		newNode->perkGridX = std::floor(a_x);
 		newNode->perkGridY = std::floor(a_y);
 		newNode->horizontalPosition = a_x - newNode->perkGridX;
 		newNode->verticalPosition = a_y - newNode->perkGridY;
-
-		auto* target = a_targetValue->perkTree;
 
 		for (auto* parent : a_parents) {
 			newNode->parents.push_back(parent);
@@ -50,7 +67,8 @@ namespace PerkManipulation {
 			child->parents.push_back(newNode);
 		}
 
-		a_targetValue->perkTree->children.push_back(newNode);
+		if (a_parents.empty())
+			a_targetValue->perkTree->children.push_back(newNode);
 	}
 
 	void Manipulator::GetDescription(RE::TESDescription* a_this, RE::BSString& a_out, RE::TESForm* a_parent, std::uint32_t a_fieldType)
