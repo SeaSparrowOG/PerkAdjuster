@@ -4,29 +4,14 @@
 
 namespace Settings {
 	static inline void FindNode(Json::Value& a_perkField,
-		std::vector<RE::BGSSkillPerkTreeNode*>& a_result,
+		std::vector<RE::BGSPerk*>& a_result,
 		RE::ActorValueInfo* a_tree) {
 		for (auto& field : a_perkField) {
 			if (!field.isString()) continue;
 			auto* perk = GetFormFromString<RE::BGSPerk>(field.asString());
 			if (!perk) continue;
 
-			auto itStart = a_tree->perkTree->children.begin();
-			auto itEnd = a_tree->perkTree->children.end();
-			bool found = false;
-			for (; !found && itStart != itEnd; ++itStart) {
-				auto* node = *itStart;
-				auto* treePerk = node->perk;
-				if (treePerk != perk) continue;
-
-				found = true;
-				a_result.push_back(*itStart);
-			}
-
-			if (!found) {
-				//TODO: Figure out a proper way to handle perks that WILL be added to the perk tree.
-				_loggerError("Perk {} was found, but was not in the tree.", field.asString());
-			}
+			a_result.push_back(perk);
 		}
 	}
 
@@ -113,8 +98,6 @@ namespace Settings {
 	}
 
 	void ReadAdditions(Json::Value& a_additionsField) {
-		auto* dataHandler = RE::TESDataHandler::GetSingleton();
-
 		for (auto& field : a_additionsField) {
 			auto& perkField = field["perk"];
 			auto& skillField = field["skill"];
@@ -157,14 +140,16 @@ namespace Settings {
 			float x = xField.asFloat();
 			float y = yField.asFloat();
 
-			std::vector<RE::BGSSkillPerkTreeNode*> parents{};
-			std::vector<RE::BGSSkillPerkTreeNode*> children{};
+			std::vector<RE::BGSPerk*> parents{};
+			std::vector<RE::BGSPerk*> children{};
 
 			if (parentField) { FindNode(parentField, parents, avif); }
 			if (childField) { FindNode(childField, children, avif); }
 
 			PerkManipulation::Manipulator::PlaceNewPerk(perk, avif, x, y, parents, children);
 		}
+
+		PerkManipulation::Manipulator::CreateLinks();
 	}
 
 	bool Read() {

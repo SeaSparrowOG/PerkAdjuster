@@ -1,6 +1,20 @@
 #include "perkManipulator.h"
 
 namespace {
+	RE::BGSSkillPerkTreeNode* FindPerkNode(RE::BGSPerk* a_perk, RE::BGSSkillPerkTreeNode* a_node) {
+		for (auto* child : a_node->children) {
+			if (child->perk == a_perk) {
+				return child;
+			}
+
+			RE::BGSSkillPerkTreeNode* foundNode = nullptr;
+			foundNode = FindPerkNode(a_perk, child);
+			if (foundNode) return foundNode;
+		}
+
+		return nullptr;
+	}
+
 	size_t GetTreeSize(RE::BGSSkillPerkTreeNode* a_node, std::vector<RE::BGSSkillPerkTreeNode*>* perks = nullptr) {
 		if (!perks) {
 			perks = new std::vector<RE::BGSSkillPerkTreeNode*>();
@@ -45,8 +59,8 @@ namespace PerkManipulation {
 	void Manipulator::PlaceNewPerk(RE::BGSPerk* a_newPerk, 
 		RE::ActorValueInfo* a_targetValue,
 		float a_x, float a_y, 
-		std::vector<RE::BGSSkillPerkTreeNode*> a_parents, 
-		std::vector<RE::BGSSkillPerkTreeNode*> a_children)
+		std::vector<RE::BGSPerk*> a_parents,
+		std::vector<RE::BGSPerk*> a_children)
 	{
 		size_t index = GetTreeSize(a_targetValue->perkTree) + 2;
 
@@ -57,18 +71,36 @@ namespace PerkManipulation {
 		newNode->horizontalPosition = a_x - newNode->perkGridX;
 		newNode->verticalPosition = a_y - newNode->perkGridY;
 
-		for (auto* parent : a_parents) {
-			newNode->parents.push_back(parent);
-			parent->children.push_back(newNode);
-		}
+		newLinks[newNode] = std::make_pair(a_parents, a_children);
+		a_targetValue->perkTree->children.push_back(newNode);
+		newNode->parents.push_back(a_targetValue->perkTree);
+	}
 
-		for (auto* child : a_children) {
-			newNode->children.push_back(child);
-			child->parents.push_back(newNode);
-		}
+	void Manipulator::CreateLinks()
+	{
+		for (auto& entry : newLinks) {
+			auto* newPerk = entry.first;
+			auto& parents = entry.second.first;
+			auto& children = entry.second.second;
 
-		if (a_parents.empty())
-			a_targetValue->perkTree->children.push_back(newNode);
+			auto* rootNode = newPerk->associatedSkill->perkTree;
+
+			for (auto* parent : parents) {
+				auto* correspondingNode = FindPerkNode(parent, rootNode);
+				if (!correspondingNode) continue;
+
+				newPerk->parents.push_back(correspondingNode);
+				correspondingNode->children.push_back(newPerk);
+			}
+
+			for (auto* child : children) {
+				auto* correspondingNode = FindPerkNode(child, rootNode);
+				if (!correspondingNode) continue;
+
+				newPerk->children.push_back(correspondingNode);
+				correspondingNode->parents.push_back(correspondingNode);
+			}
+		}
 	}
 
 	void Manipulator::GetDescription(RE::TESDescription* a_this, RE::BSString& a_out, RE::TESForm* a_parent, std::uint32_t a_fieldType)
