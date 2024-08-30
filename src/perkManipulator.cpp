@@ -1,5 +1,7 @@
 #include "perkManipulator.h"
 
+#include <unordered_set>
+
 namespace {
 	RE::BGSSkillPerkTreeNode* FindPerkNode(RE::BGSPerk* a_perk, RE::BGSSkillPerkTreeNode* a_node) {
 		for (auto* child : a_node->children) {
@@ -15,21 +17,21 @@ namespace {
 		return nullptr;
 	}
 
-	size_t GetTreeSize(RE::BGSSkillPerkTreeNode* a_node, std::vector<RE::BGSSkillPerkTreeNode*>* perks = nullptr) {
-		if (!perks) {
-			perks = new std::vector<RE::BGSSkillPerkTreeNode*>();
+	int32_t GetMaxIndex(RE::BGSSkillPerkTreeNode* node, std::unordered_set< const RE::BGSSkillPerkTreeNode*>& visited) {
+		if (!node) return 0;
+		if (visited.find(node) != visited.end()) return 0;
+		visited.insert(node);
+
+		int32_t index = node->index;
+
+		for (const auto& child : node->children) {
+			auto newIndex = GetMaxIndex(child, visited);
+			if (newIndex > index) {
+				index = newIndex;
+			}
 		}
 
-		if (std::find(perks->begin(), perks->end(), a_node) != perks->end()) {
-			return perks->size();
-		}
-		perks->push_back(a_node);
-
-		for (auto* child : a_node->children) {
-			GetTreeSize(child, perks);
-		}
-
-		return perks->size();
+		return index;
 	}
 }
 namespace PerkManipulation {
@@ -62,7 +64,8 @@ namespace PerkManipulation {
 		std::vector<RE::BGSPerk*> a_parents,
 		std::vector<RE::BGSPerk*> a_children)
 	{
-		size_t index = GetTreeSize(a_targetValue->perkTree) + 2;
+		auto visitedNodes = std::unordered_set< const RE::BGSSkillPerkTreeNode*>();
+		int32_t index = GetMaxIndex(a_targetValue->perkTree, visitedNodes) + 1;
 
 		auto* newNode = new RE::BGSSkillPerkTreeNode(index, a_targetValue);
 		newNode->perk = a_newPerk;
