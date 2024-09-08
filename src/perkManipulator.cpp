@@ -104,6 +104,85 @@ namespace PerkManipulation {
 				correspondingNode->parents.push_back(correspondingNode);
 			}
 		}
+
+		newLinks.clear();
+	}
+
+	bool Manipulator::AddPapyrusPerk(RE::BGSPerk* a_perk, RE::ActorValueInfo* a_info, 
+		float a_x, float a_y, 
+		std::vector<RE::BGSPerk*> a_parents, 
+		std::vector<RE::BGSPerk*> a_children)
+	{
+		//Sanity checks
+		if (FindPerkNode(a_perk, a_info->perkTree)) {
+			return false;
+		}
+
+		PlaceNewPerk(a_perk, a_info, a_x, a_y, a_parents, a_children);
+		CreateLinks();
+
+		auto createdEntry = PapyrusPerks(a_perk, a_info, a_x, a_y, a_parents, a_children);
+		storedPapyrusPerks.push_back(std::move(createdEntry));
+		return true;
+	}
+
+	bool Manipulator::RemovePapyrusPerk(RE::BGSPerk* a_perk, RE::ActorValueInfo* a_target)
+	{
+		bool found = false;
+		for (auto& entry : storedPapyrusPerks) {
+			if (entry.basePerk == a_perk) {
+				found = true;
+			}
+		}
+		if (!found) return false;
+
+		auto* targetNode = FindPerkNode(a_perk, a_target->perkTree);
+		if (!targetNode) {
+			if (found) {
+				auto it = storedPapyrusPerks.begin();
+				for (; found && it != storedPapyrusPerks.end(); ++it) {
+					if ((*it).basePerk == a_perk) {
+						storedPapyrusPerks.erase(it);
+						found = false;
+					}
+				}
+			}
+			return false;
+		}
+
+		for (auto* parent : targetNode->parents) {
+			bool done = false;
+			auto it = parent->children.begin();
+
+			for (; !done && it != parent->children.end(); ++it) {
+				if ((*it)->perk == a_perk) {
+					parent->children.erase(it);
+					done = true;
+				}
+			}
+		}
+
+		for (auto* child : targetNode->children) {
+			bool done = false;
+			auto it = child->children.begin();
+
+			for (; !done && it != child->children.end(); ++it) {
+				if ((*it)->perk == a_perk) {
+					child->children.erase(it);
+					done = true;
+				}
+			}
+		}
+
+		for (auto it = storedPapyrusPerks.begin(); it != storedPapyrusPerks.end(); ++it) {
+			if ((*it).basePerk == a_perk) {
+				storedPapyrusPerks.erase(it);
+				break;
+			}
+		}
+
+		RE::free(targetNode);
+		return true;
 	}
 
 	void Manipulator::GetDescription(RE::TESDescription* a_this, RE::BSString& a_out, RE::TESForm* a_parent, std::uint32_t a_fieldType)
