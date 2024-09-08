@@ -20,10 +20,10 @@ namespace PerkManipulation {
 		static bool        RemovePapyrusPerk(RE::BGSPerk* a_perk, RE::ActorValueInfo* a_target);
 
 		struct PapyrusPerks {
-			float x;
-			float y;
 			RE::BGSPerk* basePerk;
 			RE::ActorValueInfo* targetValue;
+			float x;
+			float y;
 			std::vector<RE::BGSPerk*> parents;
 			std::vector<RE::BGSPerk*> children;
 
@@ -40,6 +40,8 @@ namespace PerkManipulation {
 				this->children = a_children;
 			}
 		};
+
+		static inline std::vector<PapyrusPerks> storedPapyrusPerks;
 	private:
 		static inline void GetDescription(RE::TESDescription* a_this, RE::BSString& a_out, RE::TESForm* a_parent, std::uint32_t a_fieldType);
 		static inline REL::Relocation<decltype(&GetDescription)> _getDescription;
@@ -52,6 +54,5 @@ namespace PerkManipulation {
 		//        Pair First -> Parent perks (not nodes)
 		//        Pair Second -> Child perks (not nodes)
 		static inline std::unordered_map<RE::BGSSkillPerkTreeNode*, std::pair<std::vector<RE::BGSPerk*>, std::vector<RE::BGSPerk*>>> newLinks;
-		static inline std::vector<PapyrusPerks> storedPapyrusPerks;
 	};
 }
