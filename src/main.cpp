@@ -2,6 +2,8 @@
 
 #include "settings.h"
 #include "perkManipulator.h"
+#include "papyrus.h"
+#include "serde.h"
 
 void SetupLog() {
     auto logsFolder = SKSE::log::log_directory();
@@ -56,5 +58,13 @@ extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadInterface* a_s
 
     auto messaging = SKSE::GetMessagingInterface();
     messaging->RegisterListener(MessageHandler);
+
+    const auto serialization = SKSE::GetSerializationInterface();
+    serialization->SetUniqueID(Serialization::ID);
+    serialization->SetSaveCallback(&Serialization::SaveCallback);
+    serialization->SetLoadCallback(&Serialization::LoadCallback);
+    serialization->SetRevertCallback(&Serialization::RevertCallback);
+
+    SKSE::GetPapyrusInterface()->Register(Papyrus::RegisterFunctions);
     return true;
 }
