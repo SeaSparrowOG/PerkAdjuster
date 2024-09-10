@@ -69,9 +69,12 @@ namespace PerkManipulation {
 
 		auto* newNode = new RE::BGSSkillPerkTreeNode(index, a_targetValue);
 		newNode->perk = a_newPerk;
-		newNode->perkGridX = std::floor(a_x);
-		newNode->perkGridY = std::floor(a_y);
-		newNode->horizontalPosition = a_x - newNode->perkGridX;
+		//Change adapted from Custom Skills Framework. Credits to Parapets and Meh321
+		std::uint32_t xMax = (a_targetValue->perkTreeWidth + 1) / 2;
+		auto x = a_x + a_targetValue->perkTreeWidth * 0.5;
+		newNode->perkGridX = (std::max)(static_cast<std::int32_t>(x + 0.58), 0);
+		newNode->perkGridY = (std::min)((std::max)(static_cast<std::int32_t>(a_y - 0.12 * (xMax + 1)), 0), 4);
+		newNode->horizontalPosition = x - newNode->perkGridX;
 		newNode->verticalPosition = a_y - newNode->perkGridY;
 
 		newLinks[newNode] = std::make_pair(a_parents, a_children);
