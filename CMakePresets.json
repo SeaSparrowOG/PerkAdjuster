@@ -19,7 +19,7 @@
       "hidden": true,
       "toolchainFile": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
       "cacheVariables": {
-        "VCPKG_OVERLAY_PORTS": "${sourceDir}/cmake/ports/"
+        "VCPKG_OVERLAY_PORTS": "${sourceDir}/cmake/ports;${sourceDir}/External/CommonLibSSE/cmake/ports"
       }
     },
     {
@@ -33,53 +33,130 @@
     {
       "name": "vs2022",
       "hidden": true,
-      "generator": "Visual Studio 17 2022",
-      "toolset": "v143"
+      "generator": "Visual Studio 17 2022"
+    },
+    {
+      "name": "vs",
+      "hidden": true,
+      "generator": "Visual Studio 18 2026"
     },
     {
       "name": "release",
       "hidden": true,
-      "binaryDir": "${sourceDir}/build"
+      "binaryDir": "${sourceDir}/build",
+      "cacheVariables": {
+        "FULL_RELEASE": true
+      }
+    },
+    {
+      "name": "release-gog",
+      "hidden": true,
+      "binaryDir": "${sourceDir}/build-gog",
+      "cacheVariables": {
+        "FULL_RELEASE": true
+      }
     },
     {
       "name": "test",
       "hidden": true,
-      "binaryDir": "${sourceDir}/build-test",
+      "binaryDir": "${sourceDir}/build-test"
+    },
+    {
+      "name": "vs-windows-vcpkg-github",
+      "inherits": [
+        "cmake-dev",
+        "vcpkg",
+        "windows",
+        "vs",
+        "release"
+      ],
       "cacheVariables": {
-        "BUILD_TEST": true
+        "CMAKE_BUILD_TYPE": "Release",
+        "GOG": false,
+        "SKIP_ARTIFACTS": true
       }
     },
     {
-      "name": "vs2022-windows-vcpkg-release",
+      "name": "vs-windows-vcpkg-github-gog",
       "inherits": [
         "cmake-dev",
         "vcpkg",
         "windows",
-        "vs2022",
+        "vs",
         "release"
-      ]
+      ],
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "SKIP_ARTIFACTS": true,
+        "GOG": true
+      }
     },
     {
-      "name": "vs2022-windows-vcpkg-test",
+      "name": "vs-windows-vcpkg-release",
       "inherits": [
         "cmake-dev",
         "vcpkg",
         "windows",
-        "vs2022",
+        "vs",
+        "release"
+      ],
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "GOG": false,
+        "SKIP_ARTIFACTS": false
+      }
+    },
+    {
+      "name": "vs-windows-vcpkg-release-gog",
+      "inherits": [
+        "cmake-dev",
+        "vcpkg",
+        "windows",
+        "vs",
+        "release-gog"
+      ],
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "GOG": true,
+        "SKIP_ARTIFACTS": false
+      }
+    },
+    {
+      "name": "vs-windows-vcpkg-test",
+      "inherits": [
+        "cmake-dev",
+        "vcpkg",
+        "windows",
+        "vs",
         "test"
-      ]
+      ],
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "GOG": false,
+        "SKIP_ARTIFACTS": false
+      }
     }
   ],
   "buildPresets": [
     {
+      "name": "Github",
+      "configurePreset": "vs-windows-vcpkg-github",
+      "configuration": "Release"
+    },
+    {
       "name": "Release",
-      "configurePreset": "vs2022-windows-vcpkg-release",
+      "configurePreset": "vs-windows-vcpkg-release",
+      "configuration": "Release"
+    },
+    {
+      "name": "Release-GOG",
+      "configurePreset": "vs-windows-vcpkg-release-gog",
       "configuration": "Release"
     },
     {
       "name": "Test",
-      "configurePreset": "vs2022-windows-vcpkg-test",
-      "configuration": "Release"
+      "configurePreset": "vs-windows-vcpkg-test",
+      "configuration": "Debug"
     }
   ]
 }

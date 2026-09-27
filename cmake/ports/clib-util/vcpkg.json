@@ -1,7 +1,7 @@
 {
-    "name": "clib-util",
-    "version-string": "1.4.1",
-    "port-version": 1,
-    "description": "",
-    "homepage": "https://github.com/powerof3/CLibUtil"
-  }
+  "name": "clib-util",
+  "version-string": "1.4.8",
+  "port-version": 1,
+  "description": "",
+  "homepage": "https://github.com/powerof3/CLibUtil"
+}
