@@ -1,21 +1,25 @@
 {
   "name": "perk-adjuster",
-  "version-string": "2.0.0",
+  "version-string": "2.0.1",
   "description": "Dynamically replaces perk descriptions.",
-  "homepage": "",
-  "license": "MIT",
+  "homepage": "https://github.com/SeaSparrowOG/PerkAdjuster",
+  "license": "GPL-3.0",
   "dependencies": [
-    "rsm-binary-io",
-    "spdlog",
+    "boost-stl-interfaces",
     "clib-util",
+    "commonlib-shared",
+    "fmt",
     "jsoncpp",
+    "rsm-binary-io",
+    "simpleini",
+    "spdlog",
     "xbyak"
   ],
+  "builtin-baseline": "89dd0f4d241136b843fb55813b2f0fa6448c204d",
   "overrides": [
     {
-      "name": "fmt",
-      "version": "9.1.0"
+      "name": "xbyak",
+      "version": "7.23.1"
     }
-  ],
-  "builtin-baseline": "b7dba7f9aad09a56900f21cd78cfda1258e54e38"
+  ]
 }

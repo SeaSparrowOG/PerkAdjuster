@@ -6,6 +6,7 @@ namespace Settings {
 	static inline void FindNode(Json::Value& a_perkField,
 		std::vector<RE::BGSPerk*>& a_result,
 		RE::ActorValueInfo* a_tree) {
+			(void)a_tree;
 		for (auto& field : a_perkField) {
 			if (!field.isString()) continue;
 			auto* perk = GetFormFromString<RE::BGSPerk>(field.asString());

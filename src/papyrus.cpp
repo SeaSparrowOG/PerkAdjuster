@@ -3,13 +3,8 @@
 #include "perkManipulator.h"
 
 namespace Papyrus {
-	std::vector<int> GetVersion(STATIC_ARGS) {
-		std::vector<int> response = std::vector<int>();
-		response.push_back(Version::MAJOR);
-		response.push_back(Version::MINOR);
-		response.push_back(Version::PATCH);
-
-		return response;
+	static std::vector<int> GetVersion(STATIC_ARGS) {
+		return { Plugin::VERSION[0], Plugin::VERSION[1], Plugin::VERSION[2] };
 	}
 
 	bool AddPerkToTree(STATIC_ARGS, RE::BGSPerk* a_perk,

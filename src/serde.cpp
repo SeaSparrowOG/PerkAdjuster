@@ -235,6 +235,7 @@ namespace Serialization {
 
 	void RevertCallback(SKSE::SerializationInterface* a_intfc)
 	{
+		(void)a_intfc;
 		Revert();
 	}
 

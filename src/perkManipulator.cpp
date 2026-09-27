@@ -37,8 +37,7 @@ namespace {
 namespace PerkManipulation {
 	bool Manipulator::Install()
 	{
-		SKSE::AllocTrampoline(14);
-		auto& trampoline = SKSE::GetTrampoline();
+		auto& trampoline = REL::GetTrampoline();
 
 		REL::Relocation<std::uintptr_t> target{ REL::ID(52527), 0xD7C };
 		_getDescription = trampoline.write_call<5>(target.address(), &GetDescription);
