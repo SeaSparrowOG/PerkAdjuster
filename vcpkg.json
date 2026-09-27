@@ -1,8 +1,8 @@
 {
-  "name": "alchemy-highlighting",
-  "version-string": "1.0.1",
-  "description": "SKSE plugin that highlights ingredient effects during alchemy if they are stronger/weaker than average.",
-  "homepage": "https://github.com/SeaSparrowOG/AlchemyHighlighting",
+  "name": "perk-adjuster",
+  "version-string": "2.0.1",
+  "description": "Dynamically replaces perk descriptions.",
+  "homepage": "https://github.com/SeaSparrowOG/PerkAdjuster",
   "license": "GPL-3.0",
   "dependencies": [
     "boost-stl-interfaces",

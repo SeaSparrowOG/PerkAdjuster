@@ -6,8 +6,8 @@ option(COPY_PSC "Copies any script sources to the MO2 directory (if specified). 
 
 # -------- Project ----------
 project(
-	AlchemyHighlighting
-	VERSION 1.0.1
+	PerkAdjuster
+	VERSION 2.0.1
 	LANGUAGES CXX
 )
 
