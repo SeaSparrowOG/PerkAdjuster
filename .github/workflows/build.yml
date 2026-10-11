@@ -19,9 +19,9 @@ jobs:
     strategy:
       matrix:
         include:
-          - preset: vs-windows-vcpkg-github
+          - preset: github-steam
             artifact: release
-          - preset: vs-windows-vcpkg-github-gog
+          - preset: github-gog
             artifact: gog
 
     steps:
