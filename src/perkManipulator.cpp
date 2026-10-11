@@ -73,7 +73,7 @@ namespace PerkManipulation {
 		auto x = a_x + a_targetValue->perkTreeWidth * 0.5;
 		newNode->perkGridX = (std::max)(static_cast<std::int32_t>(x + 0.58), 0);
 		newNode->perkGridY = (std::min)((std::max)(static_cast<std::int32_t>(a_y - 0.12 * (xMax + 1)), 0), 4);
-		newNode->horizontalPosition = x - newNode->perkGridX;
+		newNode->horizontalPosition = static_cast<float>(x) - static_cast<float>(newNode->perkGridX);
 		newNode->verticalPosition = a_y - newNode->perkGridY;
 
 		newLinks[newNode] = std::make_pair(a_parents, a_children);
