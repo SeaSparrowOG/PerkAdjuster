@@ -23,20 +23,6 @@
    }
   },
   {
-   "name": "github",
-   "hidden": true,
-   "cacheVariables": {
-    "SKIP_ARTIFACTS": true
-   }
-  },
-  {
-   "name": "gog",
-   "hidden": true,
-   "cacheVariables": {
-    "GOG": true
-   }
-  },
-  {
    "name": "test",
    "hidden": false,
    "binaryDir": "${sourceDir}/build-test",
@@ -52,19 +38,23 @@
    "hidden": false,
    "binaryDir": "${sourceDir}/build",
    "inherits": [
-    "base",
-    "gog",
-    "github"
-   ]
+    "base"
+   ],
+   "cacheVariables": {
+    "GOG": true,
+    "SKIP_ARTIFACTS": true
+   }
   },
   {
    "name": "github-steam",
    "hidden": false,
    "binaryDir": "${sourceDir}/build",
    "inherits": [
-    "base",
-    "github"
-   ]
+    "base"
+   ],
+   "cacheVariables": {
+    "SKIP_ARTIFACTS": true
+   }
   }
  ]
 }
