@@ -32,7 +32,6 @@
   {
    "name": "gog",
    "hidden": true,
-   "binaryDir": "${sourceDir}/build-gog",
    "cacheVariables": {
     "GOG": true
    }
@@ -53,8 +52,8 @@
    "hidden": false,
    "binaryDir": "${sourceDir}/build",
    "inherits": [
-    "gog",
     "base",
+    "gog",
     "github"
    ]
   },
